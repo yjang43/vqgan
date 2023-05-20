@@ -102,7 +102,8 @@ class Discriminator(nn.Module):
     def forward(self, x):
 
         h = self.downsample1(x)
-        h = F.relu(h)
+        # h = F.relu(h)
+        h = F.gelu(h)
         h = self.downsample2(h)
         out = F.sigmoid(h)
         return out
