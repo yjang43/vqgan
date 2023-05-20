@@ -16,9 +16,9 @@ from util import compute_grad, unnormalize
 
 
 # args
-# device = "cuda"
-device = "mps"
-num_epoch = 50
+device = "cuda"
+# device = "mps"
+num_epoch = 100
 result_dir = "./result_vqgan"
 
 
@@ -71,13 +71,13 @@ if __name__ == "__main__":
             x_hat, z, e = model(x)
             # loss, (rec_loss, vq_loss, com_loss) = model.optimize(x, x_hat, z, e)
             min_loss, _ = model.optimize_min(x, x_hat, z, e)
-            max_loss, _ = model.optimize_min(x, x_hat, z, e)
+            max_loss, _ = model.optimize_max(x, x_hat)
 
             # prog_bar.set_description(f"loss: {round(loss, 3)}")
             prog_bar.set_description(f"min_loss: {round(min_loss, 3)} | max_loss: {round(max_loss, 3)}")
             prog_bar.update()
 
-            if (prog_bar.n) % 100 == 0:
+            if (prog_bar.n) % 500 == 0:
                 logging.info(
                     # f"loss: {loss} | "
                     # f"reconstruction loss: {rec_loss}, "

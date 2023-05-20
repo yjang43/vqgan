@@ -103,5 +103,6 @@ class Discriminator(nn.Module):
 
         h = self.downsample1(x)
         h = F.relu(h)
-        out = self.downsample2(h)
+        h = self.downsample2(h)
+        out = F.sigmoid(h)
         return out

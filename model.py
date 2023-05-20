@@ -96,14 +96,14 @@ class VQGAN(nn.Module):
         self.optimizer_max = torch.optim.Adam(params=self.max_parameters(), lr=2e-4)
     
     def min_parameters(self):
-        return chain(self.encoder.parameters(), self.generator.parameters(), self.codebook)
+        return chain(self.encoder.parameters(), self.generator.parameters(), [self.codebook])
 
     def max_parameters(self):
         return self.discriminator.parameters()
 
     def forward(self, x):
 
-        z = self.E(x)
+        z = self.encoder(x)
         b, c, h, w = z.shape
         z = rearrange(z, "b c h w -> (b h w) c")
 
@@ -114,13 +114,14 @@ class VQGAN(nn.Module):
         z_q = self.vq(z, self.codebook.detach())
         z_q = rearrange(z_q, "(b h w) c -> b c h w", b=b, h=h, w=w, c=c)
 
-        x_hat = self.D(z_q)
+        x_hat = self.generator(z_q)
         x_hat = F.tanh(x_hat)
 
         return x_hat, z, e
 
     def optimize_min(self, x, x_hat, z, e):
         
+        device = x.device
         self.optimizer_min.zero_grad()
 
         reconstruction_loss = F.mse_loss(x_hat, x)
@@ -128,7 +129,7 @@ class VQGAN(nn.Module):
         commitment_loss = F.mse_loss(z, e.detach())
 
         fake_pred = self.discriminator(x_hat)
-        generator_loss = F.binary_cross_entropy(fake_pred, torch.ones_like(fake_pred))
+        generator_loss = F.binary_cross_entropy(fake_pred, torch.ones_like(fake_pred).to(device))
 
         total_loss = (reconstruction_loss + vq_loss + 
                       self.beta*commitment_loss + generator_loss)
@@ -144,13 +145,14 @@ class VQGAN(nn.Module):
     
     def optimize_max(self, x, x_hat):
 
+        device = x.device
         self.optimizer_max.zero_grad()
 
         fake_pred = self.discriminator(x_hat.detach())
         real_pred = self.discriminator(x)
 
-        fake_loss = F.cross_entropy(fake_pred, torch.zeros_like(fake_pred))
-        real_loss = F.cross_entropy(real_pred, torch.ones_like(real_pred))
+        fake_loss = F.binary_cross_entropy(fake_pred, torch.zeros_like(fake_pred).to(device))
+        real_loss = F.binary_cross_entropy(real_pred, torch.ones_like(real_pred).to(device))
         
         total_loss = fake_loss + real_loss
         total_loss.backward()
@@ -170,13 +172,13 @@ class VQGAN(nn.Module):
             was_train = True
             self.eval()
 
-        z = self.E(x)
+        z = self.encoder(x)
         b, c, h, w = z.shape
         z = rearrange(z, "b c h w -> (b h w) c")
         z_q = self.vq(z, self.codebook)
         z_q = rearrange(z_q, "(b h w) c -> b c h w", b=b, h=h, w=w, c=c)
 
-        x_hat = self.D(z_q)
+        x_hat = self.generator(z_q)
         x_hat = F.tanh(x_hat)
 
         if was_train:
