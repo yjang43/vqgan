@@ -27,5 +27,43 @@ However, generated images from VQGAN was more crsip and detailed than VQVAE whos
 Below is the comparison of VQGAN and VQVAE.
 
 ### VQGAN
+500 Iteration
+
+![](./result_vqgan/500.png)
+
+1000 Iteration
+
+![](./result_vqgan/1000.png)
+
+1500 Iteration
+
+![](./result_vqgan/1500.png)
+
+10000 Iteration
+
+![](./result_vqgan/10000.png)
+
+20000 Iteration
+
+![](./result_vqgan/20000.png)
 
 ### VQVAE
+500 Iteration
+
+![](./result_vqvae/500.png)
+
+1000 Iteration
+
+![](./result_vqvae/1000.png)
+
+1500 Iteration
+
+![](./result_vqvae/1500.png)
+
+10000 Iteration
+
+![](./result_vqvae/10000.png)
+
+20000 Iteration
+
+![](./result_vqvae/20000.png)
