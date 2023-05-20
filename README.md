@@ -1,41 +1,31 @@
 # vqgan
-Implementation of VQGAN
+Pytorch implementation of VQGAN and comparison with VQVAE.
 
-### debugging VQVAE
-vq_loss was always so high.
-Needed to check gradient computation graph.
-Gradient flow from reconstruction loss should NOT pass on to embedding.
-Otherwise, it will greatly change embedding unwanted way.
-Even the paper states "The first term is the reconstruction loss (or the data term) which optimizes the decoder and the encoder (through the estimator explained above)".
-In otherwords, they do not pass gradient of the first term to embedding.
+## Development
+I encountered some bugs during code development. 
+More details can be found [here](debug.md).
+I think some debugging process is insightful, so please take a look at it.
 
-
-```
-[reconstruction gradient flow should be]
-e --x-->z_q --> f(z_q)
-       |
-z -----+
+## Installation
+```bash
+pip install -r ./requirements.txt
 ```
 
+## Train
+```bash
+python train.py
 ```
-[it used to be...]
-e ----->z_q --> f(z_q)
-       |
-z -----|
-```
+Log can be found in `./log` directory.
+Please keep an eye on balance between min and max loss as the balance is the important aspect of successful GAN training.
+Also, I experienced _dying relu_ effect.
+Thus, I changed `relu` to `gelu` in discriminator.
 
-Apparently... more critical issue was duplicated grad for vq_loss instead of rec_loss...
+## Result
+Interestingly, training time for decent quality image for VQGAN takes longer than VQVAE. 
+I posit this comes from the difficulty of training GAN; you need learned discriminator to train generator. 
+However, generated images from VQGAN was more crsip and detailed than VQVAE whose result was more smooth.
+Below is the comparison of VQGAN and VQVAE.
 
-```
-[vq loss gradient flow should be]
-e ----->z_q --> f(z_q)
-       |
-z --x--+
-```
+### VQGAN
 
-```
-[it used to be...]
-e ----->z_q --> f(z_q)
-       |
-z -----|
-```
+### VQVAE

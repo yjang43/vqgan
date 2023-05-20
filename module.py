@@ -15,9 +15,9 @@ class ResidualBlock(nn.Module):
     def forward(self, x):
 
         res = x
-        h = F.relu(x)
+        h = F.gelu(x)
         h = self.conv1(h)
-        h = F.relu(h)
+        h = F.gelu(h)
         h = self.conv2(h)
         out = h + res
         return out
@@ -34,7 +34,7 @@ class DownsampleBlock(nn.Module):
     def forward(self, x):
         
         h = self.conv1(x)
-        h = F.relu(h)
+        h = F.gelu(h)
         out = self.conv2(h)
         return out
 
@@ -52,7 +52,7 @@ class UpsampleBlock(nn.Module):
 
         h = self.upsample(x)
         h = self.conv1(h)
-        h = F.relu(h)
+        h = F.gelu(h)
         h = self.upsample(h)
         out = self.conv2(h)
         return out
@@ -102,7 +102,7 @@ class Discriminator(nn.Module):
     def forward(self, x):
 
         h = self.downsample1(x)
-        # h = F.relu(h)
+        # h = F.gelu(h)
         h = F.gelu(h)
         h = self.downsample2(h)
         out = F.sigmoid(h)
