@@ -11,14 +11,15 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
 from torchvision.utils import make_grid
 from tqdm import tqdm
-from model import VQVAE
+from model import VQVAE, VQGAN
 from util import compute_grad, unnormalize
 
 
 # args
-device = "cuda"
+# device = "cuda"
+device = "mps"
 num_epoch = 50
-result_dir = "./result"
+result_dir = "./result_vqgan"
 
 
 if __name__ == "__main__":
@@ -53,7 +54,8 @@ if __name__ == "__main__":
 
 
     # initialize model
-    model = VQVAE()
+    model = VQGAN()
+    # model = VQVAE()
     model.to(device)
     model.train()
 
@@ -67,19 +69,26 @@ if __name__ == "__main__":
 
             x = x.to(device)
             x_hat, z, e = model(x)
-            loss, (rec_loss, vq_loss, com_loss) = model.optimize(x, x_hat, z, e)
+            # loss, (rec_loss, vq_loss, com_loss) = model.optimize(x, x_hat, z, e)
+            min_loss, _ = model.optimize_min(x, x_hat, z, e)
+            max_loss, _ = model.optimize_min(x, x_hat, z, e)
 
-            prog_bar.set_description(f"loss: {round(loss, 3)}")
+            # prog_bar.set_description(f"loss: {round(loss, 3)}")
+            prog_bar.set_description(f"min_loss: {round(min_loss, 3)} | max_loss: {round(max_loss, 3)}")
             prog_bar.update()
 
             if (prog_bar.n) % 100 == 0:
                 logging.info(
-                    f"loss: {loss} | "
-                    f"reconstruction loss: {rec_loss}, "
-                    f"vq loss: {vq_loss}, "
-                    f"commitment loss: {com_loss}"
+                    # f"loss: {loss} | "
+                    # f"reconstruction loss: {rec_loss}, "
+                    # f"vq loss: {vq_loss}, "
+                    # f"commitment loss: {com_loss}"
+                    f"min loss: {min_loss} | "
+                    f"max loss: {max_loss}, "
                 )
-                logging.info(f"grad norm: {compute_grad(model.parameters())}")
+                # logging.info(f"grad norm: {compute_grad(model.parameters())}")
+                logging.info(f"grad norm (min): {compute_grad(model.min_parameters())}")
+                logging.info(f"grad norm (max): {compute_grad(model.max_parameters())}")
 
                 test_batch_pred = model.inference(test_batch)
                 fig, axs = plt.subplots(2, 1)

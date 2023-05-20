@@ -90,3 +90,18 @@ class Decoder(nn.Module):
         h = self.res_block2(h)
         out = self.upsample_block(h)
         return out
+
+class Discriminator(nn.Module):
+
+    def __init__(self, in_dim=3, hid_dim=256, out_dim=1):
+        
+        super().__init__()
+        self.downsample1 = DownsampleBlock(3, 64)
+        self.downsample2 = DownsampleBlock(64, 1)
+
+    def forward(self, x):
+
+        h = self.downsample1(x)
+        h = F.relu(h)
+        out = self.downsample2(h)
+        return out
